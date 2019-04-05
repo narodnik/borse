@@ -4,7 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-from order.forms import BookForm
+from order.forms import BookForm, RegisterForm
+from order.models import AccountUser
 
 def requires_login(function):
     def wrap(request, *args, **kwargs):
@@ -57,4 +58,37 @@ def login_view(request):
 
     login(request, user)
     return redirect('/')
+
+def register(request):
+    if request.method != 'POST':
+        print('Not post')
+        return redirect('/')
+
+    form = RegisterForm(request.POST)
+    if not form.is_valid():
+        # TODO: give error message why invalid
+        print('Invalid form')
+        return redirect('/')
+
+    username = form.cleaned_data['username']
+    email = form.cleaned_data['email']
+    password = form.cleaned_data['password']
+    password_again = form.cleaned_data['password_again']
+
+    if password != password_again:
+        # TODO: give error message why invalid
+        print('Passwords unmatching')
+        return redirect('/')
+
+    # TODO: check username is unique
+
+    # TODO: check appropriate password
+
+    # create new user
+    user = AccountUser.objects.create_user(
+        username=username,
+        email=email,
+        password=password)
+
+    return render(request, 'register.html')
 
