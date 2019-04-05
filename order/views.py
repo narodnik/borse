@@ -1,11 +1,17 @@
 import datetime
 
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from order.forms import BookForm
+
+def requires_login(function):
+    def wrap(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/')
+        return function(request, *args, **kwargs)
+    return wrap
 
 # Create your views here.
 def index(request):
@@ -18,7 +24,7 @@ def index(request):
 
     return render(request, 'index.html', context=context)
 
-@login_required
+@requires_login
 def other(request):
     if request.method == 'POST':
         form = BookForm(request.POST)
@@ -34,7 +40,21 @@ def other(request):
     }
     return render(request, 'other.html', context)
 
-@login_required
+@requires_login
 def logout_view(request):
     logout(request)
-    return redirect('')
+    return redirect('/')
+
+def login_view(request):
+    username = request.POST['username']
+    password = request.POST['password']
+
+    user = authenticate(request, username=username, password=password)
+    if user is None:
+        # Invalid login message
+        # TODO: add error message and redirect to login page
+        return HttpRespond("NOPE")
+
+    login(request, user)
+    return redirect('/')
+
