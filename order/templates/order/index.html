@@ -1,0 +1,15 @@
+Welcome to trade {{ num_visits }}
+
+{% if user.is_authenticated %}
+    User: {{ user.get_username }}
+    logout
+{% else %}
+    login
+{% endif %}
+
+Bitcoin:
+orderbook
+{% if user.is_authenticated %}
+    account
+{% endif %}
+
