@@ -1,8 +1,9 @@
 import datetime
 
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from order.forms import BookForm
 
@@ -15,7 +16,7 @@ def index(request):
         'num_visits': num_visits
     }
 
-    return render(request, 'order/index.html', context=context)
+    return render(request, 'index.html', context=context)
 
 @login_required
 def other(request):
@@ -31,5 +32,9 @@ def other(request):
     context = {
         'form': form
     }
-    return render(request, 'order/other.html', context)
+    return render(request, 'other.html', context)
 
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect('')
