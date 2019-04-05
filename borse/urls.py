@@ -18,8 +18,8 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/order/', permanent=True)),
-    path('order/', include('order.urls')),
+    #path('', RedirectView.as_view(url='/order/', permanent=True)),
+    path('', include('order.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
 ]
