@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-from order.forms import BookForm, RegisterForm
+from order.forms import RegisterForm
 from order.models import AccountUser
 
 def requires_login(function):
@@ -24,22 +24,6 @@ def index(request):
     }
 
     return render(request, 'index.html', context=context)
-
-@requires_login
-def other(request):
-    if request.method == 'POST':
-        form = BookForm(request.POST)
-
-        if form.is_valid():
-            return HttpResponse('Done')
-    else:
-        proposed_renewal_date = datetime.timedelta(weeks=3)
-        form = BookForm(initial={'renewal_date': proposed_renewal_date})
-
-    context = {
-        'form': form
-    }
-    return render(request, 'other.html', context)
 
 @requires_login
 def logout_view(request):
