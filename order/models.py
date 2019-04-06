@@ -13,6 +13,9 @@ class Currency(models.Model):
     code = models.CharField(max_length=3)
     name = models.TextField()
 
+    def __str__(self):
+        return self.code
+
 class Account(models.Model):
     user = models.ForeignKey(AccountUser, on_delete=models.CASCADE)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE)

@@ -26,10 +26,16 @@
 
 {% else %}
 
-    <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
-Welcome to trade {{ num_visits }}
+<p class="lead">Welcome {{ user.get_username }} ({{ num_visits }} visits)<br>You like trade!!!</p>
 
-    Welcome
+<p>Select your currency:</p>
+
+<ul>
+  {% for currency in currencies %}
+    <li><a href="">{{ currency.name }}</a>: 56 {{ currency.code }}</li>
+  {% endfor %}
+</ul>
+
 {% endif %}
 
   </div>

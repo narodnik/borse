@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from order.forms import RegisterForm
-from order.models import AccountUser
+from order.models import AccountUser, Currency
 
 def requires_login(function):
     def wrap(request, *args, **kwargs):
@@ -19,8 +19,11 @@ def index(request):
     num_visits = request.session.get('num_visits', 0)
     request.session['num_visits'] = num_visits + 1
 
+    currencies = Currency.objects.all()
+
     context = {
-        'num_visits': num_visits
+        'num_visits': num_visits,
+        'currencies': currencies
     }
 
     return render(request, 'index.html', context=context)
