@@ -6,3 +6,7 @@ class RegisterForm(forms.Form):
     password = forms.CharField()
     password_again = forms.CharField()
 
+class OrderForm(forms.Form):
+    price = forms.DecimalField()
+    amount = forms.DecimalField()
+

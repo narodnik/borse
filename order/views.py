@@ -4,8 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 
-from order.forms import RegisterForm
-from order.models import Account, AccountUser, Currency
+from order.forms import OrderForm, RegisterForm
+from order.models import *
 
 def requires_login(function):
     def wrap(request, *args, **kwargs):
@@ -77,6 +77,11 @@ def register(request):
         email=email,
         password=password)
 
+    for currency in Currency.objects.all():
+        account = Account.objects.create(
+            user=user, currency=currency, amount=0)
+        account.save()
+
     return render(request, 'register.html')
 
 def orderbook(request, base_code, quote_code):
@@ -88,17 +93,53 @@ def orderbook(request, base_code, quote_code):
 
         user = request.user
         base_account = user.account_set.get(currency__code=base_code)
-        #quote_account = user.account_set.get(currency__code=quote_code)
-        quote_account = user.account_set.get(currency__code=base_code)
+        quote_account = user.account_set.get(currency__code=quote_code)
     except (Currency.DoesNotExist, Account.DoesNotExist):
-        raise Http404("Non existent currencies")
+        raise Http404('Non existent currencies')
+
+    if request.method == 'POST':
+        form = OrderForm(request.POST)
+
+        if form.is_valid():
+            price = form.cleaned_data['price']
+            amount = form.cleaned_data['amount']
+
+            if amount > base_account.amount:
+                return HttpResponse('Not enough money')
+
+            base_account.amount -= amount
+            base_account.save()
+
+            order = Order.objects.create(user=user,
+                buy_currency=base_currency, sell_currency=quote_currency,
+                price=price, amount=amount, status=StatusTypes.ACTIVE)
+            order.save()
+    else:
+        form = OrderForm()
+
+    account_orders = user.order_set.filter(buy_currency__code=base_code,
+                                           sell_currency__code=quote_code)
+
+    buy_orders = Order.objects.filter(buy_currency__code=base_code,
+                                      sell_currency__code=quote_code,
+                                      status=StatusTypes.ACTIVE)
+    buy_orders = buy_orders.order_by('-price')
+
+    sell_orders = Order.objects.filter(buy_currency__code=quote_code,
+                                       sell_currency__code=base_code,
+                                       status=StatusTypes.ACTIVE)
+    sell_orders = sell_orders.order_by('price')
 
     context = {
         'base_currency': base_currency,
         'quote_currency': quote_currency,
         'other_currencies': other_currencies,
         'base_account': base_account,
-        'quote_account': quote_account
+        'quote_account': quote_account,
+        'account_orders': account_orders,
+        'form': form,
+        'buy_orders': buy_orders,
+        'sell_orders': sell_orders,
     }
 
     return render(request, 'orderbook.html', context=context)

@@ -17,6 +17,24 @@ class Currency(models.Model):
     def __str__(self):
         return self.code
 
+    @staticmethod
+    def initialize():
+        currencies = [
+            ('BTC', 'Bitcoin', True),
+            ('ETH', 'Ethereum', True),
+            ('LTC', 'Litecoin', True),
+            ('XMR', 'Monero', True),
+            ('SYL', 'Syrian Lira', False),
+            ('USD', 'US Dollar', False),
+            ('EUR', 'Euro', False),
+            ('TRY', 'Turkish Lira', False),
+            ('IQD', 'Iraqi Dinar', False),
+        ]
+        for code, name, is_crypto in currencies:
+            currency = Currency.objects.create(
+                code=code, name=name, is_crypto=is_crypto)
+            currency.save()
+
 class Account(models.Model):
     user = models.ForeignKey(AccountUser, on_delete=models.CASCADE)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
