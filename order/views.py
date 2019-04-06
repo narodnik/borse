@@ -1,11 +1,11 @@
 import datetime
 
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 
 from order.forms import RegisterForm
-from order.models import AccountUser, Currency
+from order.models import Account, AccountUser, Currency
 
 def requires_login(function):
     def wrap(request, *args, **kwargs):
@@ -80,15 +80,25 @@ def register(request):
     return render(request, 'register.html')
 
 def orderbook(request, base_code, quote_code):
-    base_currency = Currency.objects.get(code=base_code)
-    quote_currency = Currency.objects.get(code=quote_code)
-    other_currencies = Currency.objects.exclude(
-        code__exact=base_code).exclude(code__exact=quote_code)
+    try:
+        base_currency = Currency.objects.get(code=base_code)
+        quote_currency = Currency.objects.get(code=quote_code)
+        other_currencies = Currency.objects.exclude(
+            code__exact=base_code).exclude(code__exact=quote_code)
+
+        user = request.user
+        base_account = user.account_set.get(currency__code=base_code)
+        #quote_account = user.account_set.get(currency__code=quote_code)
+        quote_account = user.account_set.get(currency__code=base_code)
+    except (Currency.DoesNotExist, Account.DoesNotExist):
+        raise Http404("Non existent currencies")
 
     context = {
         'base_currency': base_currency,
         'quote_currency': quote_currency,
-        'other_currencies': other_currencies
+        'other_currencies': other_currencies,
+        'base_account': base_account,
+        'quote_account': quote_account
     }
 
     return render(request, 'orderbook.html', context=context)

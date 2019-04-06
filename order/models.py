@@ -22,6 +22,9 @@ class Account(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
     amount = AmountField()
 
+    def __str__(self):
+        return self.currency.code
+
 class AccountEvents(models.Model):
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE,
