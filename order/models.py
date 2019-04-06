@@ -12,6 +12,7 @@ class AccountUser(User):
 class Currency(models.Model):
     code = models.CharField(max_length=3)
     name = models.TextField()
+    is_crypto = models.BooleanField()
 
     def __str__(self):
         return self.code

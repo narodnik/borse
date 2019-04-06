@@ -41,7 +41,7 @@ def login_view(request):
     if user is None:
         # Invalid login message
         # TODO: add error message and redirect to login page
-        return HttpRespond("NOPE")
+        return HttpResponse("NOPE")
 
     login(request, user)
     return redirect('/')
@@ -78,4 +78,20 @@ def register(request):
         password=password)
 
     return render(request, 'register.html')
+
+def orderbook(request, base_code, quote_code):
+    base_currency = Currency.objects.get(code=base_code)
+    quote_currency = Currency.objects.get(code=quote_code)
+    other_currencies = Currency.objects.exclude(
+        code__exact=base_code).exclude(code__exact=quote_code)
+
+    print(request.user.timestamp)
+
+    context = {
+        'base_currency': base_currency,
+        'quote_currency': quote_currency,
+        'other_currencies': other_currencies
+    }
+
+    return render(request, 'orderbook.html', context=context)
 

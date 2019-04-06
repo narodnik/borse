@@ -32,7 +32,13 @@
 
 <ul>
   {% for currency in currencies %}
-    <li><a href="">{{ currency.name }}</a>: 56 {{ currency.code }}</li>
+    <li>
+    {% if currency.is_crypto %}
+      <a href="/orderbook/{{ currency.code }}/SYL/">{{ currency.name }}</a>: 56 {{ currency.code }}</li>
+    {% else %}
+      <a href="/orderbook/{{ currency.code }}/BTC/">{{ currency.name }}</a>: 56 {{ currency.code }}</li>
+    {% endif %}
+    </li>
   {% endfor %}
 </ul>
 

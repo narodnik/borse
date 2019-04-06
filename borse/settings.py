@@ -123,3 +123,5 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
+AUTHENTICATION_BACKENDS = ['borse.auth_backends.CustomUserModelBackend']
+
