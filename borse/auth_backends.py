@@ -7,11 +7,13 @@ class CustomUserModelBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None):
         try:
             user = AccountUser.objects.get(username=username)
-            if user.check_password(password):
-                return user
         except AccountUser.DoesNotExist:
             return None
-        return None
+
+        if not user.check_password(password):
+            return None
+
+        return user
 
     def get_user(self, user_id):
         try:
