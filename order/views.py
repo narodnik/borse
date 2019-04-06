@@ -85,8 +85,6 @@ def orderbook(request, base_code, quote_code):
     other_currencies = Currency.objects.exclude(
         code__exact=base_code).exclude(code__exact=quote_code)
 
-    print(request.user.timestamp)
-
     context = {
         'base_currency': base_currency,
         'quote_currency': quote_currency,
