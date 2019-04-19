@@ -38,7 +38,7 @@ class Currency(models.Model):
 class Account(models.Model):
     user = models.ForeignKey(AccountUser, on_delete=models.CASCADE)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-    amount = AmountField()
+    balance = AmountField()
 
     def __str__(self):
         return self.currency.code
@@ -56,21 +56,28 @@ class AccountEvents(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(AccountUser, on_delete=models.CASCADE)
 
-    buy_currency = models.ForeignKey(Currency, on_delete=models.CASCADE,
-                                     related_name='buy_orders')
+    quote_currency = models.ForeignKey(Currency, on_delete=models.CASCADE,
+                                     related_name='quote_orders')
 
-    sell_currency = models.ForeignKey(Currency, on_delete=models.CASCADE,
-                                      related_name='sell_orders')
+    base_currency = models.ForeignKey(Currency, on_delete=models.CASCADE,
+                                      related_name='base_orders')
 
     price = models.DecimalField(max_digits=8, decimal_places=2)
     amount = AmountField()
     status = StatusField()
+    
+    order_type = OrderEventField()
 
     # When first created, order belongs to no trade.
     # Then once fulfilled, an order corresponds to multiple trades
     # In the maker and taker fields.
 
     created_timestamp = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def remaining_amount(self):
+        # amount - sum(trades)
+        return self.amount
 
 class OrderEvents(models.Model):
     # This is used to cancel open orders
@@ -91,7 +98,10 @@ class Trade(models.Model):
     taker = models.ForeignKey(Order, on_delete=models.CASCADE,
                               related_name='taker_trades')
 
+    maker_amount = AmountField()
     maker_fee = AmountField()
+
+    taker_amount = AmountField()
     taker_fee = AmountField()
 
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -19,11 +19,12 @@ def index(request):
     num_visits = request.session.get('num_visits', 0)
     request.session['num_visits'] = num_visits + 1
 
-    currencies = Currency.objects.all()
+    if request.user.is_authenticated:
+        accounts = request.user.account_set.all()
 
     context = {
         'num_visits': num_visits,
-        'currencies': currencies
+        'accounts': accounts
     }
 
     return render(request, 'index.html', context=context)
@@ -97,6 +98,9 @@ def orderbook(request, base_code, quote_code):
     except (Currency.DoesNotExist, Account.DoesNotExist):
         raise Http404('Non existent currencies')
 
+    other_accounts = user.account_set.exclude(currency__code=base_code)
+    other_accounts = other_accounts.exclude(currency__code=quote_code)
+
     if request.method == 'POST':
         form = OrderForm(request.POST)
 
@@ -104,31 +108,38 @@ def orderbook(request, base_code, quote_code):
             price = form.cleaned_data['price']
             amount = form.cleaned_data['amount']
 
-            if amount > base_account.amount:
+            type_ = form.cleaned_data['order_type']
+
+            if type_ == OrderType.BUY:
+                account = quote_account
+            elif type_ == OrderType.SELL:
+                account = base_account
+
+            if amount > account.balance:
                 return HttpResponse('Not enough money')
 
-            base_account.amount -= amount
-            base_account.save()
+            account.balance -= amount
+            account.save()
+
+            assert account.balance >= 0
 
             order = Order.objects.create(user=user,
-                buy_currency=base_currency, sell_currency=quote_currency,
-                price=price, amount=amount, status=StatusTypes.ACTIVE)
+                base_currency=base_currency, quote_currency=quote_currency,
+                price=price, amount=amount, status=StatusType.ACTIVE,
+                order_type=type_)
             order.save()
     else:
         form = OrderForm()
 
-    account_orders = user.order_set.filter(buy_currency__code=base_code,
-                                           sell_currency__code=quote_code)
+    account_orders = user.order_set.filter(base_currency__code=base_code,
+                                           quote_currency__code=quote_code)
 
-    buy_orders = Order.objects.filter(buy_currency__code=base_code,
-                                      sell_currency__code=quote_code,
-                                      status=StatusTypes.ACTIVE)
-    buy_orders = buy_orders.order_by('-price')
+    all_orders = Order.objects.filter(base_currency__code=base_code,
+                                      quote_currency__code=quote_code,
+                                      status=StatusType.ACTIVE)
 
-    sell_orders = Order.objects.filter(buy_currency__code=quote_code,
-                                       sell_currency__code=base_code,
-                                       status=StatusTypes.ACTIVE)
-    sell_orders = sell_orders.order_by('price')
+    buy_orders = all_orders.filter(order_type=OrderType.BUY)
+    sell_orders = all_orders.filter(order_type=OrderType.SELL)
 
     context = {
         'base_currency': base_currency,
@@ -136,6 +147,7 @@ def orderbook(request, base_code, quote_code):
         'other_currencies': other_currencies,
         'base_account': base_account,
         'quote_account': quote_account,
+        'other_accounts': other_accounts,
         'account_orders': account_orders,
         'form': form,
         'buy_orders': buy_orders,

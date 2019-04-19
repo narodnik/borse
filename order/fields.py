@@ -7,7 +7,7 @@ class AmountField(models.DecimalField):
         kwargs['decimal_places'] = 20
         super().__init__(*args, **kwargs)
 
-class StatusTypes:
+class StatusType:
     ACTIVE = 'Active'
     PROCESSING = 'Process'
     CLOSED = 'Closed'
@@ -24,10 +24,10 @@ class StatusField(models.CharField):
 
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 8
-        kwargs['choices'] = StatusTypes.STATUS_CHOICES
+        kwargs['choices'] = StatusType.STATUS_CHOICES
         super().__init__(*args, **kwargs)
 
-class AccountEventTypes:
+class AccountEventType:
     DEPOSIT = 'DE'
     WITHDRAW = 'WI'
 
@@ -39,5 +39,21 @@ class AccountEventTypes:
 class AccountEventField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 2
-        kwargs['choices'] = AccountEventTypes.EVENT_CHOICES
+        kwargs['choices'] = AccountEventType.EVENT_CHOICES
         super().__init__(*args, **kwargs)
+
+class OrderType:
+    BUY = 'Buy'
+    SELL = 'Sell'
+
+    ORDER_CHOICES = (
+        (BUY, 'Buy'),
+        (SELL, 'Sell')
+    )
+
+class OrderEventField(models.CharField):
+    def __init__(self, *args, **kwargs):
+        kwargs['max_length'] = 4
+        kwargs['choices'] = OrderType.ORDER_CHOICES
+        super().__init__(*args, **kwargs)
+

@@ -9,4 +9,6 @@ class RegisterForm(forms.Form):
 class OrderForm(forms.Form):
     price = forms.DecimalField()
     amount = forms.DecimalField()
+    order_type = forms.ChoiceField(choices=(('Buy', 'Buy'), ('Sell', 'Sell')),
+                                   widget=forms.RadioSelect)
 

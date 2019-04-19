@@ -31,12 +31,12 @@
 <p>Select your currency:</p>
 
 <ul>
-  {% for currency in currencies %}
+  {% for account in accounts %}
     <li>
-    {% if currency.is_crypto %}
-      <a href="/orderbook/{{ currency.code }}/SYL/">{{ currency.name }}</a>: 56 {{ currency.code }}</li>
+    {% if account.currency.is_crypto %}
+      <a href="/orderbook/{{ account.currency.code }}/SYL/">{{ account.currency.name }}</a>: {{ account.balance|floatformat:5 }} {{ account.currency.code }}</li>
     {% else %}
-      <a href="/orderbook/{{ currency.code }}/BTC/">{{ currency.name }}</a>: 56 {{ currency.code }}</li>
+      <a href="/orderbook/{{ account.currency.code }}/BTC/">{{ account.currency.name }}</a>: {{ account.balance|floatformat:5 }} {{ account.currency.code }}</li>
     {% endif %}
     </li>
   {% endfor %}
